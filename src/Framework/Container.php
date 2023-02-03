@@ -6,22 +6,12 @@ class Container
 {
     private array $container = [];
 
-    public function __construct()
-    {
-        $this->container['Container'] = [
-            'class' => '\App\Framework\Container',
-            'arguments' => [],
-            'instance' => $this,
-        ];
-    }
-
-    public function setDependency(string $id, string $className, array $arguments, mixed $instance = null, array $routes = null): void
+    public function setDependency(string $id, string $className, array $arguments, mixed $instance = null): void
     {
         $this->container[$id] = [
             'class' => $className,
             'arguments' => $arguments,
             'instance' => $instance,
-            'routes' => $routes,
         ];
     }
 
