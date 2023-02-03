@@ -2,13 +2,7 @@ DefaultController:
   class: '\App\Controller\DefaultController'
   args:
     - '@Hello'
-  routes:
-    /: 'index'
 Hello:
   class: '\App\Utils\Hello'
   args:
     - 'test'
-Router:
-  class: '\App\Framework\Router'
-  args:
-    - '@Container'
