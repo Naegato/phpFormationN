@@ -2,64 +2,69 @@
 
 namespace App\Framework;
 
+use App\Entity\Dependency;
+use App\Interface\BuilderInterface;
+
 class Container
 {
+
+    /**
+     * @var Dependency[];
+     */
     private array $container = [];
 
-    public function setDependency(string $id, string $className, array $arguments, mixed $instance = null): void
+    public function setDependency(Dependency $dependency): void
     {
-        $this->container[$id] = [
-            'class' => $className,
-            'arguments' => $arguments,
-            'instance' => $instance,
-        ];
-    }
-
-    private function setDependencyInstance(string $id, mixed $instance): void {
-        $this->container[$id]['instance'] = $instance;
-    }
-
-    private function getRoutes() {
-        return $this->container;
+      $this->container[$dependency->getKey()] = $dependency;
     }
 
     public function getDependency(string $id) {
-        if (!$this->container[$id]['instance']) {
-            $arguments = $this->container[$id]['arguments'];
+        if ($id === 'Container') {
+            return $this;
+        }
 
-            foreach ($arguments as $key => $value) {
+        if (!$this->container[$id]->getInstance()) {
+            if (!$this->container[$id]->getBuilder()) {
+                $arguments = $this->container[$id]->getArgs();
 
-                if (str_starts_with($value, '@')) {
-                    $arguments[$key] = $this->getDependency(substr($value, 1));
+                if ($arguments) {
+                    foreach ($arguments as $key => $value) {
+                        $isArray = is_array($value);
+
+                        if (str_starts_with($isArray ? $value[0] : $value, '@')) {
+                            if ($isArray) {
+                                if ($value[1]) {
+                                    $arguments[$key] = $this->getDependency(substr($value[0], 1))->$value[1]();
+                                } else {
+                                    $arguments[$key] = $this->getDependency(substr($value[0], 1))();
+                                }
+                            } else {
+                                $arguments[$key] = $this->getDependency(substr($value, 1));
+                            }
+                        }
+                    }
                 }
+
+                $this->container[$id]->setInstance(new ($this->container[$id]->getClass())(...($arguments ?? [])));
+            } else {
+                /** @var BuilderInterface $builder */
+                $builder = $this->getDependency(substr($this->container[$id]->getBuilder(), 1));
+                $this->container[$id]->setInstance($builder());
             }
 
-            $instance = new ($this->container[$id]['class'])(...$arguments);
-            $this->setDependencyInstance($id, $instance);
+            foreach ($this->container[$id]->getUse() as $function => $values) {
+                foreach ($values as $parameters) {
+                    foreach ($parameters as $key => $param) {
+                        if (str_starts_with($param, '@')) {
+                            $parameters[$key] = $this->getDependency(substr($param, 1));
+                        }
+                    }
+
+                    $this->container[$id]->getInstance()->$function(...$parameters);
+                }
+            }
         }
 
-        return $this->container[$id]['instance'];
+        return $this->container[$id]->getInstance();
     }
-
-    public function getDependencies() {
-        $array = [];
-
-        foreach ($this->container as $key => $value) {
-            $array[$key] = $this->getDependency($key);
-        }
-
-        return $array;
-    }
-
-    public function getContainer(): array {
-        return $this->container;
-    }
-
-    public function getContainerWithDependencies(): array {
-        $this->getDependencies();
-
-        return $this->container;
-    }
-
-
 }

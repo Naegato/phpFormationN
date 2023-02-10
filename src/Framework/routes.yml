@@ -1,0 +1,20 @@
+/:
+  controller: DefaultController
+/bye:
+  controller: DefaultController
+  function: bye
+/twig:
+  controller: DefaultController
+  function: twig
+
+/twig/{id}:
+  controller: DefaultController
+  function: twigWithId
+
+/{name}/pokemon:
+  controller: DefaultController
+  function: anotherTest2
+
+/{name}/{id}:
+  controller: DefaultController
+  function: anotherTest

@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use Symfony\Component\Routing\Annotation\Route;
+
 class Hello
 {
 
@@ -9,11 +11,13 @@ class Hello
     {
     }
 
-    public function hello() {
-        echo 'hello'.$this->name;
+    public function hello(): string
+    {
+        return 'hello '.$this->name;
     }
 
-    public function bye() {
-        echo 'bye'.$this->name;
+    public function bye(): string
+    {
+        return 'bye '.$this->name;
     }
 }

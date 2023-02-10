@@ -1,8 +1,52 @@
+# Controller
 DefaultController:
   class: '\App\Controller\DefaultController'
   args:
     - '@Hello'
+FrameworkController:
+  class: '\App\Controller\FrameworkController'
+
+# Framework
+Router:
+  class: '\App\Framework\Router'
+  builder: '@RouterBuilder'
+
+EventDispatcher:
+  class: '\App\Framework\EventDispatcher'
+  use:
+    addListener:
+      - ['@ListenerLog', 'kernel.start']
+# utils
 Hello:
   class: '\App\Utils\Hello'
   args:
     - 'test'
+#builder
+RouterBuilder:
+  class: '\App\Builder\RouterBuilder'
+  args:
+    - ['@RouteProvider']
+    - '@Container'
+
+YamlRouterBuilder:
+  class: '\App\Builder\YamlRouterBuilder'
+AttributesRouterBuilder:
+  class: '\App\Builder\AttributesRouterBuilder'
+#listener
+ListenerLog:
+  class: '\App\Listener\ListenerLog'
+
+#Provider
+RouteProvider:
+  class: '\App\Provider\RouteProvider'
+  args:
+    - '@YamlRouteProvider'
+    - '@AttributesRouteProvider'
+YamlRouteProvider:
+  class: '\App\Provider\YamlRouteProvider'
+  args:
+    - '/../Framework/routes.yml'
+AttributesRouteProvider:
+  class: '\App\Provider\AttributesRouteProvider'
+  args:
+    - 'App\Controller'
